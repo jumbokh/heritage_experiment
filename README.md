@@ -183,6 +183,8 @@ training framework code.
 
 ## Documentation
 
+- `docs/getting_started_zh_tw.md`
+  Traditional Chinese step-by-step getting started guide.
 - `docs/annotation_guideline.md`
   Annotation notes and class-level guidance.
 - `docs/real_image_annotation_import_sop.md`
@@ -207,6 +209,6 @@ training framework code.
 
 ## Next Recommended Improvements
 
-- Add `requirements-lock.txt` or `environment.yml`.
+- Add `requirements-lock.txt`.
 - Normalize document encodings and wording.
 - Add sample metadata or a small public demo subset if sharing with others.
