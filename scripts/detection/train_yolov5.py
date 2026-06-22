@@ -10,7 +10,6 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SYNTH_DATASET = PROJECT_ROOT / "data" / "datasets" / "yolo_detection" / "dataset.yaml"
 DEFAULT_MIXED_DATASET = PROJECT_ROOT / "data" / "datasets" / "yolo_detection_mixed" / "dataset.yaml"
-DEFAULT_REPO = PROJECT_ROOT / "external" / "yolov5_official"
 CONFIG_DIR = PROJECT_ROOT / "experiments" / "exp02_detection" / "configs"
 RUNS_DIR = PROJECT_ROOT / "experiments" / "exp02_detection" / "runs"
 
@@ -49,7 +48,6 @@ def resolve_repo(repo_arg: Path | None) -> Path | None:
         candidates.append(Path(yolo_env))
     candidates.extend(
         [
-            DEFAULT_REPO,
             PROJECT_ROOT / "yolov5",
             PROJECT_ROOT.parent / "yolov5",
             Path("D:/src/yolov5"),
@@ -195,7 +193,8 @@ def main() -> None:
     print(f"Torch ready: {torch_ready}")
 
     if repo is None:
-        print("YOLOv5 repo not found. Set --repo or YOLOV5_REPO before executing training.")
+        print("YOLOv5 repo not found.")
+        print("Clone YOLOv5 separately and set --repo or YOLOV5_REPO before executing training.")
         return
     if not torch_ready:
         print("Selected Python environment does not provide torch. Install dependencies or choose another Python before executing training.")

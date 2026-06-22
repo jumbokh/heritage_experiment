@@ -8,6 +8,20 @@
   Mixed real/synthetic detection dataset. Real samples are included only when
   matching resized images and YOLO labels already exist.
 
+## External YOLOv5 Setup
+
+This repository no longer vendors YOLOv5. Clone it separately before training:
+
+```powershell
+git clone https://github.com/ultralytics/yolov5 D:\src\yolov5
+python -m pip install -r D:\src\yolov5\requirements.txt
+```
+
+Training can then find YOLOv5 by:
+
+- passing `--repo D:\src\yolov5`
+- setting `YOLOV5_REPO=D:\src\yolov5`
+
 ## Recommended Order
 
 1. `python scripts/preprocess/preprocess_and_inventory.py`
@@ -30,8 +44,7 @@ The launcher script does three things before training:
 Example:
 
 ```powershell
-C:\Users\jumbo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
-  D:\src\codex\heritage_experiment\scripts\detection\train_yolov5.py `
+python scripts\detection\train_yolov5.py `
   --dataset-type mixed `
   --repo D:\src\yolov5 `
   --weights yolov5n.pt `
@@ -42,7 +55,7 @@ C:\Users\jumbo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\p
 ```
 
 If the YOLOv5 repository is not found, the script still writes the launch note
-and prints the missing prerequisite instead of guessing.
+and prints a message asking you to set `--repo` or `YOLOV5_REPO`.
 
 PowerShell launchers:
 

@@ -35,9 +35,14 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-If you need a specific PyTorch build for CUDA or CPU-only execution, install the
-matching `torch` and `torchvision` wheels from the official PyTorch channel
-before rerunning `pip install -r requirements.txt`.
+For YOLOv5 training, clone YOLOv5 separately and install its own dependencies:
+
+```powershell
+git clone https://github.com/ultralytics/yolov5 D:\src\yolov5
+python -m pip install -r D:\src\yolov5\requirements.txt
+```
+
+Then point the training wrapper to that clone with `--repo` or `YOLOV5_REPO`.
 
 ## Repository Layout
 
@@ -48,13 +53,12 @@ before rerunning `pip install -r requirements.txt`.
 |   `-- exp02_detection/
 |       |-- configs/
 |       `-- runs/                 # ignored by Git
-|-- external/
-|   `-- yolov5_official/
 |-- scripts/
 |   |-- annotations/
 |   |-- detection/
 |   |-- preprocess/
 |   `-- validation/
+|-- external/                     # optional local clones, ignored by Git
 |-- data/                         # local-only inputs and outputs, ignored by Git
 `-- results/                      # local-only outputs, ignored by Git
 ```
@@ -160,10 +164,15 @@ lightweight and shareable.
 
 ## External Dependency
 
-The repository currently includes `external/yolov5_official/` as a vendored
-copy of YOLOv5-related code used by the training workflow. If you plan to
-maintain this project long-term, consider replacing it with a pinned submodule
-or an explicit dependency management strategy.
+YOLOv5 is now treated as an external dependency rather than vendored source.
+The training workflow expects one of the following:
+
+- `--repo <path-to-yolov5>`
+- `YOLOV5_REPO=<path-to-yolov5>`
+- a local clone under `D:\src\yolov5`
+
+This keeps the repository lighter and separates project code from upstream
+training framework code.
 
 ## Documentation
 
@@ -182,15 +191,15 @@ or an explicit dependency management strategy.
 
 ## Current Limitations
 
-- No reproducible environment file is provided yet.
+- No fully locked environment file is provided yet.
 - Large local datasets and outputs are not versioned in this repository.
 - Mixed-dataset evaluation quality still depends on the amount and quality of
   real labeled data available locally.
 - Some documentation files may still need cleanup or normalization.
+- YOLOv5 must be cloned separately before training.
 
 ## Next Recommended Improvements
 
-- Add `requirements.txt` or `environment.yml`.
+- Add `requirements-lock.txt` or `environment.yml`.
 - Normalize document encodings and wording.
-- Decide whether `external/yolov5_official/` should remain vendored.
 - Add sample metadata or a small public demo subset if sharing with others.

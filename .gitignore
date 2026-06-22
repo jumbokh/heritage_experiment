@@ -27,6 +27,8 @@ results/
 
 # Experiment runs and caches
 experiments/**/runs/
+external/*
+!external/README.md
 external/**/__pycache__/
 external/*.zip
 scripts/**/__pycache__/
