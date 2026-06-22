@@ -1,73 +1,75 @@
-# 真實影像標註匯入 SOP
+# Real Image Annotation Import SOP
 
 ## 目的
 
-將 `D2` 真實缺陷影像或手機拍攝影像匯入目前研究骨架，使其能自動進入：
+將真實缺陷影像與其 YOLO 標註安全匯入目前的研究流程，使其能被納入：
 
-1. `data/raw/image_inventory.csv`
-2. `data/annotations/real_ready/real_detection_manifest.csv`
-3. `data/datasets/yolo_detection_mixed/`
+- `data/raw/image_inventory.csv`
+- `data/annotations/real_ready/real_detection_manifest.csv`
+- `data/datasets/yolo_detection_mixed/`
 
-## 適用來源
+## 適用資料來源
 
-- `D2` 真實缺陷影像
-  放入 `data/raw/dunhuang_original/D2_real_defect/`
-- 手機拍攝螢幕影像
-  放入 `data/raw/mobile_capture/screen_capture/`
-- 手機拍攝列印影像
-  放入 `data/raw/mobile_capture/print_capture/`
+- `data/raw/dunhuang_original/D2_real_defect/`
+  敦煌真實缺陷影像
+- `data/raw/mobile_capture/screen_capture/`
+  手機螢幕翻拍影像
+- `data/raw/mobile_capture/print_capture/`
+  紙本列印翻拍影像
 
-## 檔名規則
+在 mixed dataset 組裝流程中，只有下列 `group` 會被視為真實資料候選：
 
-- 影像檔可使用英數、底線，避免空白與中文標點
-- 建議格式：
-  - `d2_flake_001.jpg`
-  - `mobile_screen_crack_002.png`
-  - `mobile_print_stain_003.jpg`
+- `D2`
+- `MOBILE_SCREEN`
+- `MOBILE_PRINT`
 
-系統在前處理後會自動轉成標準化 `image_id`，例如：
+## 命名要求
+
+原始影像檔名建議使用英文小寫、數字與底線，避免空白與中文，例如：
+
+- `d2_flake_001.jpg`
+- `mobile_screen_crack_002.png`
+- `mobile_print_stain_003.jpg`
+
+完成前處理後，系統會依資料來源自動產生 `image_id`，例如：
 
 - `D2_0001_d2_flake_001`
 - `MOBILE_SCREEN_0001_mobile_screen_crack_002`
 
-## 標註規格
-
-每張真實影像需有一個對應的 YOLO detection 標註檔，放在：
-
-- `data/annotations/bbox_yolo/`
-
-標註檔名稱必須與前處理後的 `image_id` 一致，例如：
+YOLO 標註檔名稱必須和 `image_id` 完全一致，例如：
 
 - `D2_0001_d2_flake_001.txt`
 - `MOBILE_SCREEN_0001_mobile_screen_crack_002.txt`
 
-YOLO 每行格式：
+## 標註要求
+
+YOLO 標註檔需放在：
+
+- `data/annotations/bbox_yolo/`
+
+每一行格式固定為：
 
 ```text
 class_id center_x center_y width height
 ```
 
-限制：
+限制如下：
 
-- 每行共 5 個欄位
-- `class_id` 目前只接受：
-  - `0` = crack
-  - `1` = pigment_loss
-  - `2` = stain
-- 座標必須為 `0` 到 `1` 之間的小數
-- 同一張圖目前建議只標同一類缺陷
+- 每一行必須只有 5 個欄位
+- `center_x`, `center_y`, `width`, `height` 必須是 `0` 到 `1` 之間的小數
+- 單張影像目前只接受單一缺陷類別
 
-## 操作步驟
+目前支援的類別如下：
 
-1. 將真實影像放進對應資料夾
-2. 執行前處理，產生標準化 `image_id`
-3. 依照 `image_id` 建立對應 YOLO `.txt`
-4. 執行 real manifest 匯入
-5. 執行 mixed dataset 重組
+- `0` = crack
+- `1` = pigment_loss
+- `2` = stain
 
-## 建議命令
+如果同一張圖混入多個 `class_id`，匯入時會被標記為 `multi_class_per_image`。
 
-### 一鍵流程
+## 作業流程
+
+### 一次完成流程
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/detection/import_real_to_mixed.ps1
@@ -75,45 +77,64 @@ powershell -ExecutionPolicy Bypass -File scripts/detection/import_real_to_mixed.
 
 ### 分步流程
 
+1. 將真實影像放到對應原始資料夾
+2. 執行前處理，建立 `image_inventory.csv` 與 resized 影像
+3. 依 `image_id` 建立對應的 YOLO `.txt`
+4. 執行真實標註匯入
+5. 重新組裝 mixed dataset
+
 ```powershell
-C:\Users\jumbo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
-  scripts/preprocess/preprocess_and_inventory.py
-
-C:\Users\jumbo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
-  scripts/detection/import_real_yolo_samples.py
-
-C:\Users\jumbo\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe `
-  scripts/assemble_mixed_detection_dataset.py --clean
+python scripts/preprocess/preprocess_and_inventory.py
+python scripts/detection/import_real_yolo_samples.py
+python scripts/assemble_mixed_detection_dataset.py --clean
 ```
+
+## 匯入成功的必要條件
+
+對於每一筆真實樣本，系統會檢查：
+
+- `data/processed/resized/<image_id>.png` 是否存在
+- `data/annotations/bbox_yolo/<image_id>.txt` 是否存在
+- YOLO 格式是否正確
+- 是否只包含單一類別
+
+全部通過後，該筆資料才會在 `real_detection_manifest.csv` 中被標記為 `ready`。
 
 ## 匯入後檢查
 
-檢查下列檔案：
+請確認下列檔案已更新：
 
 - `data/raw/image_inventory.csv`
 - `data/annotations/real_ready/real_detection_manifest.csv`
 - `data/datasets/yolo_detection_mixed/mixed_manifest.csv`
 
-如果匯入成功，`real_detection_manifest.csv` 內應看到：
+若匯入成功，可在 `real_detection_manifest.csv` 中看到：
 
 - `group` 為 `D2`、`MOBILE_SCREEN` 或 `MOBILE_PRINT`
 - `status` 為 `ready`
+- `image_path` 與 `label_path` 已填入
 
-## 常見錯誤
+## 常見狀態碼
 
 - `missing_processed_image`
-  - 尚未先跑前處理
+  尚未先執行前處理
 - `missing_label`
-  - 沒有放對應 YOLO `.txt`
+  找不到對應的 YOLO `.txt`
+- `empty_label`
+  標註檔存在但內容為空
 - `invalid_yolo_format`
-  - 標註檔不是 5 欄
+  某一行不是 5 欄格式
+- `unknown_class_id`
+  類別不在目前支援清單內
+- `non_numeric_label`
+  座標欄位含非數字內容
 - `out_of_range_label`
-  - YOLO 座標超出 `0~1`
+  YOLO 座標超出 `0` 到 `1`
 - `multi_class_per_image`
-  - 同一張圖混入多個 class id
+  同一張圖混入多種缺陷類別
 
-## 建議實務
+## 建議做法
 
-- 真實資料優先保留給 `val/test`
-- synthetic 資料主要用於 warm-up 與擴增
-- 若是論文正式報告，請避免只用 synthetic `val/test`
+- 研究初期可用 synthetic-only 或 mixed dataset 做 warm-up
+- 正式評估時，盡量保留真實資料給 `val/test`
+- 若真實標註樣本太少，mixed dataset 可能退化成以 synthetic 為主，這可用於除錯，但不適合正式報告
