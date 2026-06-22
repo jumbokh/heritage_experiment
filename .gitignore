@@ -1,0 +1,37 @@
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Local backups
+*.bak
+*.bak-*
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+
+# Experiment data and generated artifacts
+data/raw/
+data/processed/
+data/synthetic_damage/
+data/synthetic_damage.bak-*/
+data/datasets/
+data/splits/
+data/annotations/
+results/
+
+# Experiment runs and caches
+experiments/**/runs/
+external/**/__pycache__/
+external/*.zip
+scripts/**/__pycache__/
+
+# YOLO and training artifacts
+*.pt
+*.onnx
+*.engine
