@@ -35,6 +35,13 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
+Or create a Conda environment:
+
+```powershell
+conda env create -f environment.yml
+conda activate heritage-experiment
+```
+
 For YOLOv5 training, clone YOLOv5 separately and install its own dependencies:
 
 ```powershell
